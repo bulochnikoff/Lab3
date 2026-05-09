@@ -12,7 +12,10 @@ def health():
 
 from api.v1.sensors import bp as sensors_bp
 app.register_blueprint(sensors_bp)
-
+# Глобальный обработчик ошибок 400
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({"error": "Invalid input", "details": str(error.description)}), 400
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
