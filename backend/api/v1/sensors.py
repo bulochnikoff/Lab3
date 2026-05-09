@@ -3,10 +3,8 @@ from flask import request
 from api.v1.schemas import SensorReadingSchema
 from api import api
 
-# Создаём namespace для датчиков
 ns = Namespace('sensors', description='Операции с датчиками')
 
-# Модель для документации в Swagger
 reading_model = ns.model('Reading', {
     'sensor_id': fields.String(required=True, min_length=36, description='UUID датчика'),
     'value': fields.Float(required=True, description='Значение измерения'),
@@ -23,16 +21,31 @@ class Readings(Resource):
     @ns.response(201, 'Успешно добавлено')
     @ns.response(400, 'Ошибка валидации')
     def post(self):
-        """Добавить новое измерение"""
+        from database import db, SensorReading
+        import datetime
+        data = request.json
         schema = SensorReadingSchema()
-        errors = schema.validate(request.json)
+        errors = schema.validate(data)
         if errors:
             return {"errors": errors}, 400
         
-        return {"status": "success", "data": request.json}, 201
+        reading = SensorReading(
+            sensor_id=data['sensor_id'],
+            value=data['value'],
+            timestamp=datetime.datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00')),
+            lat=data['location']['lat'],
+            lon=data['location']['lon']
+        )
+        db.session.add(reading)
+        db.session.commit()
+        return {"status": "success", "data": data}, 201
+
+    def get(self):
+        from database import SensorReading
+        readings = SensorReading.query.all()
+        return [r.to_dict() for r in readings], 200
 
 @ns.route('/test')
 class Test(Resource):
     def get(self):
-        """Тестовый эндпоинт для проверки"""
         return {"message": "sensors blueprint works"}

@@ -9,7 +9,7 @@ api = Api(
 
 # Импортируем и регистрируем namespace для сенсоров
 from api.v1.sensors import ns as sensors_ns
-api.add_namespace(sensors_ns, path='/api/v1')
+api.add_namespace(sensors_ns, path='/api/v1/sensors')
 
 # Импортируем и регистрируем namespace для ML-моделей
 from api.v1.models import ns as models_ns
