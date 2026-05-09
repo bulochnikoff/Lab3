@@ -24,21 +24,8 @@
 - Docker, Docker Compose
 
 ## Структура проекта
-Lab3/
-├── backend/
-│ ├── api/
-│ │ ├── init.py 
-│ │ └── v1/
-│ │ ├── init.py
-│ │ ├── sensors.py 
-│ │ ├── models.py 
-│ │ └── schemas.py 
-│ ├── app.py 
-│ ├── database.py
-│ ├── requirements.txt
-│ ├── Dockerfile
-│ └── .env
-├── docker-compose.yml
+<img width="165" height="308" alt="image" src="https://github.com/user-attachments/assets/34232840-a85d-4e90-a4cd-d8cd61eb1ca1" />
+
 
 
 ## Запуск с помощью Docker Compose
