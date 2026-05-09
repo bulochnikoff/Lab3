@@ -1,25 +1,38 @@
-from flask import Blueprint, jsonify, request
+from flask_restx import Namespace, Resource, fields
+from flask import request
 from api.v1.schemas import SensorReadingSchema
+from api import api
 
-bp = Blueprint('sensors', __name__, url_prefix='/api/v1/sensors')
+# Создаём namespace для датчиков
+ns = Namespace('sensors', description='Операции с датчиками')
 
+# Модель для документации в Swagger
+reading_model = ns.model('Reading', {
+    'sensor_id': fields.String(required=True, min_length=36, description='UUID датчика'),
+    'value': fields.Float(required=True, description='Значение измерения'),
+    'timestamp': fields.DateTime(required=True, description='Время измерения (ISO)'),
+    'location': fields.Nested(ns.model('Location', {
+        'lat': fields.Float(required=True),
+        'lon': fields.Float(required=True)
+    }), required=True, description='Геолокация')
+})
 
-@bp.route('/test', methods=['GET'])
-def test():
-    return jsonify({"message": "sensors blueprint works"})
+@ns.route('/readings')
+class Readings(Resource):
+    @ns.expect(reading_model)
+    @ns.response(201, 'Успешно добавлено')
+    @ns.response(400, 'Ошибка валидации')
+    def post(self):
+        """Добавить новое измерение"""
+        schema = SensorReadingSchema()
+        errors = schema.validate(request.json)
+        if errors:
+            return {"errors": errors}, 400
+        
+        return {"status": "success", "data": request.json}, 201
 
-# Новый POST для добавления показаний
-@bp.route('/readings', methods=['POST'])
-def add_reading():
-    schema = SensorReadingSchema()
-    # Валидируем входящие данные
-    errors = schema.validate(request.json)
-    if errors:
-        return jsonify({"errors": errors}), 400
-
-    
-
-    return jsonify({
-        "status": "success",
-        "data": request.json
-    }), 201
+@ns.route('/test')
+class Test(Resource):
+    def get(self):
+        """Тестовый эндпоинт для проверки"""
+        return {"message": "sensors blueprint works"}
